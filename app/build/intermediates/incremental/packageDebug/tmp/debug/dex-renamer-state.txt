@@ -1,4 +1,4 @@
-#Thu Dec 19 17:15:01 IST 2019
+#Thu Dec 19 17:54:47 IST 2019
 base.0=/home/shashimal/Desktop/project/SimpleExpenseManager/app/build/intermediates/dex/debug/mergeDexDebug/out/classes.dex
 path.0=classes.dex
 renamed.0=classes.dex

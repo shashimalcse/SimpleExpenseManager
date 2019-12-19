@@ -13,6 +13,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.AccountDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.exception.InvalidAccountException;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
 
 public class SQLiteAccountDAO implements AccountDAO {
 
@@ -31,17 +32,13 @@ public class SQLiteAccountDAO implements AccountDAO {
 
         List<String> AccountNumbers = new ArrayList<>();
 
-        String selectQuery = String.format("SELECT %s FROM ACCOUNT",Account.COLUMN_ACOOUNTNO) ;
-
-        Cursor cursor = db.rawQuery(selectQuery,null);
-
-        if(cursor.moveToFirst()){
-            do{
-                String AccountNumber =(cursor.getString(0));
-                AccountNumbers.add(AccountNumber);
-            }
-            while (cursor.moveToNext());
+        Cursor cursor = db.rawQuery("SELECT " +Account.COLUMN_ACOOUNTNO + " from "
+                + Account.TABLE_NAME , null);
+        ArrayList<String> accountNumbers = new ArrayList<>();
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            AccountNumbers.add(cursor.getString(0));
         }
+
         cursor.close();
         return AccountNumbers;
     }
@@ -53,14 +50,12 @@ public class SQLiteAccountDAO implements AccountDAO {
 
         List<Account> AccountList = new ArrayList<>();
 
-        String selectQuery = String.format("SELECT %s %s %s %s FROM ACCOUNT ",Account.COLUMN_ACOOUNTNO,Account.COLUMN_BANKNAME,Account.COLUMN_HOLDERNAME,Account.COLUMN_BALANCE);
+        Cursor cursor = db.rawQuery("SELECT * from " + Account.TABLE_NAME, null);
 
-        Cursor cursor = db.rawQuery(selectQuery,null);
-
-        if(cursor.moveToFirst()){
-            do{
-                AccountList.add(new Account(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3)));
-            }while(cursor.moveToNext());
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            Account account = new Account(cursor.getString(0), cursor.getString(1),
+                    cursor.getString(2), cursor.getDouble(3));
+            AccountList.add(account);
         }
         cursor.close();
         return AccountList;
@@ -71,16 +66,14 @@ public class SQLiteAccountDAO implements AccountDAO {
 
         SQLiteDatabase db = sqliteHelper.getReadableDatabase();
 
-        String selectQuery = String.format("SELECT %s %s %s %s FROM ACCOUNT WHERE %s =" +accountNo,
-                Account.COLUMN_ACOOUNTNO,Account.COLUMN_BANKNAME,Account.COLUMN_HOLDERNAME,Account.COLUMN_BALANCE,Account.COLUMN_ACOOUNTNO);
-
-        Cursor cursor = db.rawQuery(selectQuery,null);
-
-        if(!cursor.moveToFirst()){
-            throw new InvalidAccountException("Account " + accountNo + " is invalid");
+        Cursor cursor = db.rawQuery("SELECT * from " + Account.TABLE_NAME + " WHERE " + Account.COLUMN_ACOOUNTNO + "=?;", new String[]{accountNo});
+        Account account;
+        if (cursor.moveToFirst()) {
+            account = new Account(cursor.getString(0), cursor.getString(1),
+                    cursor.getString(2), cursor.getDouble(3));
+        } else {
+            throw new InvalidAccountException("Invalid account Number");
         }
-
-        Account account = new Account(cursor.getString(0), cursor.getString(1), cursor.getString(2), cursor.getDouble(3));
         cursor.close();
 
         return account;
@@ -91,30 +84,29 @@ public class SQLiteAccountDAO implements AccountDAO {
     public void addAccount(Account account) {
         SQLiteDatabase db = sqliteHelper.getWritableDatabase();
 
-        String query = String.format("INSERT OR IGNORE INTO ACCOUNT (%s %s %s %s) VALUES ? ? ? ?",
-                Account.COLUMN_ACOOUNTNO,
-                Account.COLUMN_BANKNAME,
-                Account.COLUMN_HOLDERNAME,
-                Account.COLUMN_BALANCE);
+        ContentValues values = new ContentValues();
+        values.put(Account.COLUMN_ACOOUNTNO, account.getAccountNo());
+        values.put(Account.COLUMN_BANKNAME, account.getBankName());
+        values.put(Account.COLUMN_HOLDERNAME, account.getAccountHolderName());
+        values.put(Account.COLUMN_BALANCE, account.getBalance());
 
-        db.execSQL(query, new Object[]{
-                account.getAccountNo(),
-                account.getBankName(),
-                account.getAccountHolderName(),
-                account.getBalance()});
+        db.insert(Account.TABLE_NAME, null, values);
 
 
     }
 
     @Override
     public void removeAccount(String accountNo) throws InvalidAccountException {
-        getAccount(accountNo);
+
         SQLiteDatabase db = sqliteHelper.getWritableDatabase();
 
-        String query = String.format("DELETE FROM ACCOUNT WHERE %S = ?",
-                Account.COLUMN_ACOOUNTNO);
-
-        db.execSQL(query, new Object[]{accountNo});
+        Cursor cursor = db.rawQuery("SELECT * from " + Account.TABLE_NAME + " WHERE " + Account.COLUMN_ACOOUNTNO + "=?;", new String[]{accountNo});
+        if (cursor.moveToFirst()) {
+            db.delete(Account.TABLE_NAME, Account.COLUMN_ACOOUNTNO + " = ?", new String[]{accountNo});
+        } else {
+            throw new InvalidAccountException("Invalid account Number");
+        }
+        cursor.close();
     }
 
     @Override

@@ -29,32 +29,23 @@ public class SQLiteTransactionDAO implements TransactionDAO {
         SQLiteDatabase db = sqliteHelper.getWritableDatabase();
 
 
-        String query = String.format("INSERT OR IGNORE INTO TRANSACTION (%s, %s, %s, %s) VALUES (?, ?, ?, ?)",
-                Transaction.COLUMN_DATE,
-                Transaction.COLUMN_ACCOUNTNO,
-                Transaction.COLUMN_EXPENSETYPE,
-                Transaction.COLUMN_AMOUNT);
-
-        db.execSQL(query, new Object[]{
-                date.getTime(),
-                accountNo,
-                expenseType,
-                amount});
+        ContentValues values = new ContentValues();
+        values.put(Transaction.COLUMN_DATE, date.toString());
+        values.put(Transaction.COLUMN_ACCOUNTNO, accountNo);
+        values.put(Transaction.COLUMN_EXPENSETYPE, expenseType.toString());
+        values.put(Transaction.COLUMN_AMOUNT, amount);
+        db.insert(Transaction.TABLE_NAME, null, values);
     }
+
 
     @Override
     public List<Transaction> getAllTransactionLogs() {
         SQLiteDatabase db = sqliteHelper.getWritableDatabase();
 
-        String query = String.format("SELECT %s, %s, %s, %s FROM TRANSACTION)",
-                Transaction.COLUMN_DATE,
-                Transaction.COLUMN_ACCOUNTNO,
-                Transaction.COLUMN_EXPENSETYPE,
-                Transaction.COLUMN_AMOUNT);
 
         List<Transaction> TransactionList = new ArrayList<>();
 
-        final Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery("SELECT * from " + Transaction.TABLE_NAME , null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -74,16 +65,11 @@ public class SQLiteTransactionDAO implements TransactionDAO {
 
         SQLiteDatabase db = sqliteHelper.getWritableDatabase();
 
-        String query = String.format("SELECT %s, %s, %s, %s FROM TRANSACTION LIMIT %s)",
-                Transaction.COLUMN_DATE,
-                Transaction.COLUMN_ACCOUNTNO,
-                Transaction.COLUMN_EXPENSETYPE,
-                Transaction.COLUMN_AMOUNT,
-                limit);
+
 
         List<Transaction> TransactionList = new ArrayList<>();
 
-        final Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery("SELECT * from " + Transaction.TABLE_NAME +" LIMIT "+limit, null);
 
         if (cursor.moveToFirst()) {
             do {

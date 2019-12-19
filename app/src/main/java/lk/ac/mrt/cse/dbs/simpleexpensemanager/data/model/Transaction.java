@@ -22,9 +22,7 @@ import java.util.Date;
  * This POJO holds the information regarding a single transaction.
  */
 public class Transaction {
-    public static final String TABLE_NAME = "TRANSACTION";
-
-
+    public static final String TABLE_NAME = "TRANSACTION0";
     public static final String COLUMN_ACCOUNTNO = "accountNo";
     public static final String COLUMN_EXPENSETYPE = "expenseType";
     public static final String COLUMN_AMOUNT = "amount";
@@ -76,11 +74,12 @@ public class Transaction {
 
     // Create table SQL query
     public static final String CREATE_TABLE =
-            "CREATE TABLE " +TABLE_NAME+ "(" + COLUMN_DATE+ " VARCHAR(10) PRIMARY KEY, "
-                    + COLUMN_ACCOUNTNO + " TEXT , "
-                    + COLUMN_EXPENSETYPE + " TEXT ,"
-                    + COLUMN_AMOUNT + " REAL ,"
-                    +"FOREIGN KEY ("+COLUMN_ACCOUNTNO+") REFERENCES "+Account.TABLE_NAME+"("+COLUMN_ACCOUNTNO+")"+" )";
+            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "("
+                    + COLUMN_DATE + " VARCHAR PRIMARY KEY ,"
+                    + COLUMN_ACCOUNTNO + " VARCHAR,"
+                    + COLUMN_EXPENSETYPE + " VARCHAR,"
+                    + COLUMN_AMOUNT + " NUMERIC"
+                    + ")";
 
 
     public Transaction(Date date, String accountNo,

@@ -30,11 +30,11 @@ public class Account {
 
     // Create table SQL query
     public static final String CREATE_TABLE =
-            "CREATE TABLE " + TABLE_NAME + "("
-                    + COLUMN_ACOOUNTNO + " TEXT PRIMARY KEY ,"
-                    + COLUMN_BANKNAME + " TEXT,"
-                    + COLUMN_HOLDERNAME + " TEXT,"
-                    + COLUMN_BALANCE + " REAL"
+            "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "("
+                    + COLUMN_ACOOUNTNO + " VARCHAR PRIMARY KEY ,"
+                    + COLUMN_BANKNAME + " VARCHAR,"
+                    + COLUMN_HOLDERNAME + " VARCHAR,"
+                    + COLUMN_BALANCE + " NUMERIC"
                     + ")";
     private String accountNo;
     private String bankName;
